@@ -4,19 +4,24 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
 
 // GetAllKeys returns all the keys of the store.
-func GetAllKeys(store map[string]interface{}) http.HandlerFunc {
+func GetAllKeys(store map[string]interface{}, mu *sync.Mutex) http.HandlerFunc {
+	mu.Lock()
+	defer mu.Unlock()
 	return func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(store)
 	}
 }
 
 // SetKeys sets new keys in the store.
-func SetKeys(store map[string]interface{}) http.HandlerFunc {
+func SetKeys(store map[string]interface{}, mu *sync.Mutex) http.HandlerFunc {
+	mu.Lock()
+	defer mu.Unlock()
 	return func(w http.ResponseWriter, r *http.Request) {
 		reqBody, _ := ioutil.ReadAll(r.Body)
 		err := json.Unmarshal(reqBody, &store)
@@ -28,7 +33,9 @@ func SetKeys(store map[string]interface{}) http.HandlerFunc {
 }
 
 // DeleteAllKeys deletes all the keys of the store.
-func DeleteAllKeys(store map[string]interface{}) http.HandlerFunc {
+func DeleteAllKeys(store map[string]interface{}, mu *sync.Mutex) http.HandlerFunc {
+	mu.Lock()
+	defer mu.Unlock()
 	return func(w http.ResponseWriter, r *http.Request) {
 		for k := range store {
 			delete(store, k)
@@ -38,7 +45,9 @@ func DeleteAllKeys(store map[string]interface{}) http.HandlerFunc {
 }
 
 // GetSingleKey returns the specified key in path variable.
-func GetSingleKey(store map[string]interface{}) http.HandlerFunc {
+func GetSingleKey(store map[string]interface{}, mu *sync.Mutex) http.HandlerFunc {
+	mu.Lock()
+	defer mu.Unlock()
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		key := vars["key"]
@@ -49,7 +58,9 @@ func GetSingleKey(store map[string]interface{}) http.HandlerFunc {
 }
 
 // DeleteSingleKey deletes the specified key in path variable and returns the new store.
-func DeleteSingleKey(store map[string]interface{}) http.HandlerFunc {
+func DeleteSingleKey(store map[string]interface{}, mu *sync.Mutex) http.HandlerFunc {
+	mu.Lock()
+	defer mu.Unlock()
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		key := vars["key"]

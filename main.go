@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
@@ -12,6 +13,7 @@ import (
 type Server struct {
 	store  map[string]interface{}
 	router *mux.Router
+	mu     sync.Mutex
 }
 
 func main() {
@@ -21,5 +23,5 @@ func main() {
 	}
 	s.routes()
 	fmt.Println("Server listening....")
-	log.Fatal(http.ListenAndServe(":8080", s.router))
+	log.Fatal(http.ListenAndServe(":9000", s.router))
 }
